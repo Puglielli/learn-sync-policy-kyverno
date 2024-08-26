@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: devops
+  labels:
+    app: nginx
+  annotations:
+    fluent-bit/agent-inject: "true"
+    fluent-bit/cpu-metrics: "true"
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: nginx
+        team: devops
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: nginx
+          image: nginx:1.14.2
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: "20m"
+              memory: "50M"
+            limits:
+              cpu: "40m"
+              memory: "100M"
+          ports:
+            - name: nginx
+              containerPort:  80
+              

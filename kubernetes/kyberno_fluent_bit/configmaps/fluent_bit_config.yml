@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit-config
+  namespace: default
+  labels:
+    fluent-bit.io.type: "Configuration"
+    fluent-bit.io.service: "FluentBit"
+    fluent-bit.io.category: "FluentBit-config-file"
+data:
+  fluent-bit.yaml: |
+    env:
+      flush_interval: 1
+      log_level: DEBUG
+
+    service:
+      flush: ${flush_interval}
+      log_level: ${log_level}
+      http_server: ON
+      daemon: OFF
+      http_listen: 0.0.0.0
+      http_port: 2021
+      storage.metrics: ON
+
+    includes:
+      - config/*.yaml

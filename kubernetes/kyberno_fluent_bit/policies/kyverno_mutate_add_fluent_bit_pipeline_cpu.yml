@@ -1,0 +1,38 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: add-fluent-bit-cpu-metrics
+  annotations:
+    policies.kyverno.io/title: Inject FluentBit CPU Metrics
+    policies.kyverno.io/category: Metrics and Logs
+    policies.kyverno.io/severity: Low
+    policies.kyverno.io/subject: Deployment
+    policies.kyverno.io/description: >-
+      For use cases like sidecar injection, it is often the case that deployments
+      want to export logs or/and metrics and need a service to do so. 
+      This policy injects fluent-bit into containers named fluent-bit for existing deployments
+      that have the fluent-bit/cpu-metrics="true" annotation.
+spec:
+  mutateExistingOnPolicyUpdate: false
+  rules:
+    - name: add-fluent-bit-cpu-metrics
+      match:
+        any:
+          - resources:
+              kinds:
+                - Deployment
+              annotations:
+                fluent-bit/cpu-metrics: "true"
+      mutate:
+        patchesJson6902: |-
+          - op: add
+            path: /spec/template/spec/volumes/-
+            value:
+              name: fluent-bit-pipeline-cpu
+              configMap:
+                name: fluent-bit-pipeline-cpu
+          - op: add
+            path: /spec/template/spec/containers/0/volumeMounts/-
+            value:
+              name: fluent-bit-pipeline-cpu
+              mountPath: /fluent-bit/etc/config/

@@ -1,0 +1,57 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: add-fluent-bit-sidecar
+  annotations:
+    policies.kyverno.io/title: Inject SideCar Agent Fluent-Bit
+    policies.kyverno.io/category: Metrics and Logs
+    policies.kyverno.io/severity: Medium
+    policies.kyverno.io/subject: Deployment
+    policies.kyverno.io/description: >-
+      For use cases like sidecar injection, it is often the case that deployments
+      want to export logs or/and metrics and need a service to do so. 
+      This policy injects fluent-bit into containers named fluent-bit for existing deployments
+      that have the fluent-bit/agent-inject="true" annotation.
+spec:
+  mutateExistingOnPolicyUpdate: false
+  rules:
+    - name: add-fluent-bit-sidecar
+      match:
+        any:
+          - resources:
+              kinds:
+                - Deployment
+              annotations:
+                fluent-bit/agent-inject: "true"
+      mutate:
+        patchStrategicMerge:
+          spec:
+            template:
+              spec:
+                containers:
+                  - name: fluent-bit
+                    image: fluent/fluent-bit:3.1.6
+                    command: ["/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit/etc/fluent-bit.yaml"]
+                    ports:
+                      - name: agent-metrics
+                        containerPort: 2020
+                    resources:
+                      limits:
+                        cpu: 500m
+                        memory: 1Gi
+                    volumeMounts:
+                      - name: app-logs
+                        mountPath: /var/log/containers
+                      - name: fluent-bit-config
+                        mountPath: /fluent-bit/etc/
+                      - name: fluent-bit-pipeline-memory
+                        mountPath: /fluent-bit/etc/config
+                volumes:
+                  - name: app-logs
+                    emptyDir: {}
+                  - name: fluent-bit-config
+                    configMap:
+                      name: fluent-bit-config
+                  - name: fluent-bit-pipeline-memory
+                    configMap:
+                      name: fluent-bit-pipeline-memory

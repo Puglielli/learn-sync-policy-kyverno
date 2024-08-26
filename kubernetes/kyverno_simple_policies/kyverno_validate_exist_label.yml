@@ -1,0 +1,27 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-labels
+  annotations:
+    policies.kyverno.io/title: Validate If Exists Team Label
+    policies.kyverno.io/category: Other
+    policies.kyverno.io/severity: Low
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      For use cases for validate exists label, this is typically the case for deployments
+      that need to follow an established pattern of labels on resources.
+spec:
+  validationFailureAction: Enforce
+  rules:
+    - name: check-team
+      match:
+        any:
+          - resources:
+              kinds:
+              - Pod
+      validate:
+        message: "label 'team' is required"
+        pattern:
+          metadata:
+            labels:
+              team: "?*"

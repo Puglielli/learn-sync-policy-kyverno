@@ -1,0 +1,87 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: sync-configmaps-fluent-bit
+  annotations:
+    policies.kyverno.io/title: Sync ConfigMap Fluent Bit Config 
+    policies.kyverno.io/category: Metrics and Logs
+    policies.kyverno.io/severity: Low
+    policies.kyverno.io/subject: ConfigMap
+    policies.kyverno.io/description: >-
+      For use cases of creating a configMaps in every new namespace that is created,
+      it is usually the case that every namespace needs to have some default settings.
+spec:
+  generateExisting: true
+  rules:
+    - name: sync-fluent-bit-config
+      match:
+        any:
+        - resources:
+            kinds:
+              - Namespace
+      exclude:
+        any:
+          - resources:
+              namespaces:
+              - kube-system
+              - default
+              - kube-public
+              - kyverno
+              - local-path-storage
+      generate:
+        apiVersion: v1
+        kind: ConfigMap
+        name: fluent-bit-config
+        namespace: "{{request.object.metadata.name}}"
+        synchronize: true
+        clone:
+          namespace: default
+          name: fluent-bit-config
+    - name: sync-fluent-bit-pipeline-cpu
+      match:
+        any:
+        - resources:
+            kinds:
+            - Namespace
+      exclude:
+        any:
+          - resources:
+              namespaces:
+              - kube-system
+              - default
+              - kube-public
+              - kyverno
+              - local-path-storage
+      generate:
+        apiVersion: v1
+        kind: ConfigMap
+        name: fluent-bit-pipeline-cpu
+        namespace: "{{request.object.metadata.name}}"
+        synchronize: true
+        clone:
+          namespace: default
+          name: fluent-bit-pipeline-cpu
+    - name: sync-fluent-bit-pipeline-memory
+      match:
+        any:
+        - resources:
+            kinds:
+            - Namespace
+      exclude:
+        any:
+          - resources:
+              namespaces:
+              - kube-system
+              - default
+              - kube-public
+              - kyverno
+              - local-path-storage
+      generate:
+        apiVersion: v1
+        kind: ConfigMap
+        name: fluent-bit-pipeline-memory
+        namespace: "{{request.object.metadata.name}}"
+        synchronize: true
+        clone:
+          namespace: default
+          name: fluent-bit-pipeline-memory
