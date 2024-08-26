@@ -1,0 +1,13 @@
+services:
+  fluent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fluent-bit
+    environment:
+      TZ: America/Sao_Paulo
+    ports:
+      - 2020:2020
+    volumes:
+      - ./fluent-bit.yaml:/fluent-bit/etc/fluent-bit.yaml
+      - ./pipelines:/fluent-bit/etc/config/

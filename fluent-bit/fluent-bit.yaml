@@ -1,0 +1,15 @@
+env:
+  flush_interval: 1
+  log_level: DEBUG
+
+service:
+  flush: ${flush_interval}
+  log_level: ${log_level}
+  http_server: ON
+  daemon: OFF
+  http_listen: 0.0.0.0
+  http_port: 2021
+  storage.metrics: ON
+
+includes:
+  - config/*.yaml

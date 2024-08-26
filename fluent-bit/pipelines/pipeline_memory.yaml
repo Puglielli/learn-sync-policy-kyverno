@@ -1,0 +1,7 @@
+pipeline:
+  inputs:
+    - name: mem
+      tag: my_mem
+  outputs:
+    - name: stdout
+      match: 'my*mem'

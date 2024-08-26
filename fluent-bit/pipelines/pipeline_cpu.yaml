@@ -1,0 +1,7 @@
+pipeline:
+  inputs:
+    - name: cpu
+      tag: my_cpu
+  outputs:
+    - name: stdout
+      match: 'my*cpu'
